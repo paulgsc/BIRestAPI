@@ -1,7 +1,19 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
+
+
+
+
+
+# In[6]:
+
+
+# !pip install pretty_html_table
+
+
+# In[16]:
 
 
 import pickle
@@ -10,6 +22,8 @@ from google_auth_oauthlib.flow import Flow, InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from google.auth.transport.requests import Request
+from pretty_html_table import build_table
+import pandas as pd
 
 
 def Create_Service(client_secret_file, api_name, api_version, *scopes):
@@ -53,7 +67,7 @@ def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
     return dt
 
 
-# In[2]:
+# In[8]:
 
 
 
@@ -65,7 +79,7 @@ from email import encoders
 import mimetypes
 
 
-# In[3]:
+# In[9]:
 
 
 CLIENT_SECRET_FILE = 'client_secret_file.json'
@@ -74,13 +88,13 @@ API_VERSION = 'v1'
 SCOPES = ['https://mail.google.com/']
 
 
-# In[4]:
+# In[10]:
 
 
 service = Create_Service(CLIENT_SECRET_FILE, API_NAME, API_VERSION, SCOPES)
 
 
-# In[5]:
+# In[11]:
 
 
 def sendEmail(msg_string, recepient, subject, template='html'):
@@ -95,17 +109,53 @@ def sendEmail(msg_string, recepient, subject, template='html'):
         print('Email Successfully Sent')
 
 
-# In[ ]:
+# In[12]:
 
 
+df = pd.DataFrame({'Age': [1, 22, 88], 'Address': ['123', 'abc', 'street']})
 
 
+# In[37]:
 
-# In[29]:
+
+# build table arguments
+html_table = build_table(df
+            , 'yellow_dark'
+            , font_size='medium'
+            , font_family='Open Sans, sans-serif'
+            , text_align='center'
+            , width='auto'
+            , index=False
+            ,conditions={
+                'Age': {
+                    'min': 25,
+                    'max': 60,
+                    'min_color': 'red',
+                    'max_color': 'green',
+                }
+            }
+                         , even_color='black'
+                         , even_bg_color='white')
+
+
+# In[38]:
+
+
+variable = 11
+message=f"""
+<h1>Hello World!</h1>
+Cdiv>
+{html_table}
+</div>
+"""
+print(message)
+
+
+# In[39]:
 
 
 # HTML message, would use mako templating in real scenario
-msg_html = """
+msg_html = f"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -113,40 +163,30 @@ msg_html = """
   <title>html title</title>
   <style type="text/css" media="screen">
 .attribution {{ color: #aaaaaa; font-size: 8pt }}
-.greeting {{ font-size: 54pt; font-styweight: bold}}
+.greeting {{ font-size: 14pt; font-styweight: bold}}
 
-td {
-  {text-align: right;}
-}
-
-tr:nth-child(even) {
-  background-color: #D6EEEE;
-}
 </style></head>
 <body>
-<span class="greeting">Hello, {}!</span>
-<p>As our valued customer, we would like to invite you to our annual sale!</p>
+<div>
+<span class="greeting">Hello,</span>
+<p>Your spreadsheet has been updated!</p>
+</div>
+<div>
+Below is a preview of the table updated
+{html_table}
+</div>
 <p class="attribution">
 <a href="https://www.youtube.com/watch?v=JRCJ6RtE3xU&ab_channel=CoreySchafer">
 Image by FreeVector.com
-</a></p>
-<table>
-<tr>
-    <th>Has Negative Inventory</th>
-    <th>Location</th>
-    <th>Count</th>
-  </tr>
-  <tr>
-    <td>True</td>
-    <td>LA STOCK</td>
-    <td>20</td>
-  </tr>
-</table>
+</a>
+This email was sent by a bot!
+</p>
+
 </body></html>
 """
 
 
-# In[30]:
+# In[40]:
 
 
 sendEmail(msg_html, 'paulgathondudev@gmail.com', 'testing html')
